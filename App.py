@@ -23,15 +23,18 @@ class App:
     def set_dynamic_routes(self, route_dict):
         self.router.add_dynamic_route_dict(route_dict)
 
-    def set_static_routes(self, route_dict):
+    def set_static_dir_routes(self, route_dict):
         self.router.add_static_dir_dict(route_dict)
+
+    def set_static_file_routes(self, route_dict):
+        self.router.add_static_file_dict(route_dict)
 
     def set_spa_routes(self, route_file_dict):
         for route_file, target_file in route_file_dict.items():
             with open(route_file, 'r') as f:
                 spa_routes = json.load(f)
             for spa_page in spa_routes:
-                self.router.add_static_dir('/{}'.format(spa_page[0]), target_file)
+                self.router.add_static_file('/{}'.format(spa_page[0]), target_file)
 
     def __call__(self, env, start_response):
         response = Response()

@@ -1,5 +1,6 @@
 import re
 import mimetypes
+import json
 from .Response import Response
 
 class Router:
@@ -30,8 +31,11 @@ class Router:
             return response
 
         def _get_file(self, request_path):
-            sub_path = re.search(self.uri_pattern, request_path).group(1)
-            file_path = self.file_path_pattern.replace('{sub_path}', sub_path)
+            file_path = self.file_path_pattern
+            match = re.search(self.uri_pattern, request_path)
+            if len(match.groups()) > 0:
+                sub_path = match.group(1)
+                file_path = file_path.replace('{sub_path}', sub_path)
             try:
                 with open(file_path, 'rb') as f:
                     data = f.read()
@@ -55,6 +59,16 @@ class Router:
     def add_static_dir_dict(self, static_dir_dict):
         for k, v in static_dir_dict.items():
             self.add_static_dir(k, v)
+
+    def add_static_file(self, request_path, target_path):
+        uri_pattern = '^{}$'.format(request_path)
+        file_path_pattern = '{}'.format(target_path)
+        route = self.Route('GET', uri_pattern, file_path_pattern)
+        self.route_list.append(route)
+
+    def add_static_file_dict(self, static_file_list):
+        for k, v in static_file_list.items():
+            self.add_static_file(k, v)
 
     def add_dynamic_route(self, method, request_path_pattern, target_func):
         # request_path_pattern
