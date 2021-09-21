@@ -3,6 +3,7 @@ import mimetypes
 import json
 from .Router import Router
 from .Response import Response
+from .Request import Request
 
 class App:
     def __init__(self):
@@ -37,18 +38,16 @@ class App:
                 self.router.add_static_file('/{}'.format(spa_page[0]), target_file)
 
     def __call__(self, env, start_response):
+        request = Request(env)
         response = Response()
         response.merge(self.default_response)
-        method = env['REQUEST_METHOD'].upper()
-        path = env['PATH_INFO'] or '/'
-        route = self.router.find(method, path)
+        route = self.router.find(request.method, request.path)
         if route is not None:
-            route_result = route.exec(env)
+            route_result = route.exec(request)
             response.merge(route_result)
         else:
             response.merge(Response(404))
         response = self._after_setting(response)
-        # print('status: {}\nheaders: {}\ndata: {}'.format(response.status, response.headers, response.data.decode('utf-8')))
         start_response(response.status, response.headers)
         return [response.data]
 

@@ -20,13 +20,13 @@ class Router:
                 return True
             return False
 
-        def exec(self, env):
+        def exec(self, request):
             response = Response()
             if self.func is not None:
-                res = self.func()
+                res = self.func(request)
                 response.merge(res)
             if self.file_path_pattern is not None:
-                res = self._get_file(env['PATH_INFO'])
+                res = self._get_file(request.path)
                 response.merge(res)
             return response
 

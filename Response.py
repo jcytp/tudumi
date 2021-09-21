@@ -7,12 +7,14 @@ class Response:
         500: '500 Internal Server Error',
     }
 
-    def __init__(self, code=0, headers={}, data=b''):
+    def __init__(self, code=0, headers={}, data=b'', text=''):
         self.status = Response.CODE_STATUS.get(code)
         self.headers = []
         for k, v in headers.items():
             self.headers.append((k, v))
         self.data = data
+        if len(text) > 0:
+            self.data = text.encode('utf-8')
 
     def set_code(self, code):
         self.status = Response.CODE_STATUS.get(code)
