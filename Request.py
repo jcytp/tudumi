@@ -17,3 +17,6 @@ class Request:
         for mfs in form_data.list:
             self.params[mfs.name] = mfs.value
 
+    def add_param(self, key, value):
+        self.params[key] = value
+        print('add_param| self.params: {}'.format(self.params))

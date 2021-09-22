@@ -8,9 +8,11 @@ class Router:
         self.route_list = []
     
     class Route:
-        def __init__(self, method, uri_pattern, file_path_pattern=None, func=None):
+        def __init__(self, method, uri_pattern, uri_param_names=(), file_path_pattern=None, func=None):
             self.method = method
             self.uri_pattern = uri_pattern
+            self.uri_param_names = uri_param_names
+            print('### uri_param_names: {}'.format(uri_param_names))
             self.file_path_pattern = file_path_pattern
             self.func = func
 
@@ -22,6 +24,12 @@ class Router:
 
         def exec(self, request):
             response = Response()
+            m = re.match(self.uri_pattern, request.path)
+            uri_params = m.groups()
+            for i in range(len(self.uri_param_names)):
+                param_name = self.uri_param_names[i]
+                param_value = uri_params[i]
+                request.add_param(param_name, param_value)
             if self.func is not None:
                 res = self.func(request)
                 response.merge(res)
@@ -53,7 +61,7 @@ class Router:
         #   - 中括弧 {} を使用できない。
         uri_pattern = '^{}(.*)$'.format(request_path_root)
         file_path_pattern = '{}{{sub_path}}'.format(target_path_root)
-        route = self.Route('GET', uri_pattern, file_path_pattern)
+        route = self.Route('GET', uri_pattern, file_path_pattern=file_path_pattern)
         self.route_list.append(route)
 
     def add_static_dir_dict(self, static_dir_dict):
@@ -63,7 +71,7 @@ class Router:
     def add_static_file(self, request_path, target_path):
         uri_pattern = '^{}$'.format(request_path)
         file_path_pattern = '{}'.format(target_path)
-        route = self.Route('GET', uri_pattern, file_path_pattern)
+        route = self.Route('GET', uri_pattern, file_path_pattern=file_path_pattern)
         self.route_list.append(route)
 
     def add_static_file_dict(self, static_file_list):
@@ -78,10 +86,14 @@ class Router:
         # target_func
         #   - パス変数の数と引数の数が一致する必要がある。
         uri_pattern = request_path_pattern
-        uri_pattern = re.sub('\{.*\}', '([^/]*)', uri_pattern)
         uri_pattern = uri_pattern.replace('*', '[^/]*')
+        uri_params_list = re.findall('\{[^\}]*\}', uri_pattern)
+        for i in range(len(uri_params_list)):
+            uri_params_list[i] = uri_params_list[i][1:-1]
+        uri_param_names = tuple(uri_params_list)
+        uri_pattern = re.sub('\{[^\}]*\}', '([^/]*)', uri_pattern)
         uri_pattern = '^{}$'.format(uri_pattern)
-        route = self.Route(method, uri_pattern, func=target_func)
+        route = self.Route(method, uri_pattern, uri_param_names=uri_param_names, func=target_func)
         self.route_list.append(route)
 
     def add_dynamic_route_dict(self, dynamic_route_dict):
