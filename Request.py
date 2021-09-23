@@ -14,8 +14,16 @@ class Request:
             environ=env,
             keep_blank_values=True,
         )
-        for mfs in form_data.list:
-            self.params[mfs.name] = mfs.value
+        if form_data is not None and form_data.list is not None:
+            for mfs in form_data.list:
+                self.params[mfs.name] = mfs.value
+        try:
+            json_data = json.loads(self.body)
+            if isinstance(json_data, dict) :
+                for key, value in json_data.items():
+                    self.params[key] = value
+        except json.decoder.JSONDecodeError:
+            pass
 
     def add_param(self, key, value):
         self.params[key] = value
