@@ -12,7 +12,6 @@ class Router:
             self.method = method
             self.uri_pattern = uri_pattern
             self.uri_param_names = uri_param_names
-            print('### uri_param_names: {}'.format(uri_param_names))
             self.file_path_pattern = file_path_pattern
             self.func = func
 
@@ -22,8 +21,9 @@ class Router:
                 return True
             return False
 
-        def exec(self, request):
+        def exec(self, request, env):
             response = Response()
+            databases = env['db'].values()
             m = re.match(self.uri_pattern, request.path)
             uri_params = m.groups()
             for i in range(len(self.uri_param_names)):
@@ -31,7 +31,11 @@ class Router:
                 param_value = uri_params[i]
                 request.add_param(param_name, param_value)
             if self.func is not None:
-                res = self.func(request)
+                for db in databases:
+                    db.connect()
+                res = self.func(request, env)
+                for db in databases:
+                    db.close()
                 response.merge(res)
             if self.file_path_pattern is not None:
                 res = self._get_file(request.path)
@@ -68,8 +72,14 @@ class Router:
         for k, v in static_dir_dict.items():
             self.add_static_dir(k, v)
 
-    def add_static_file(self, request_path, target_path):
-        uri_pattern = '^{}$'.format(request_path)
+    def add_static_file(self, request_path_pattern, target_path):
+        # uri_pattern = '^{}$'.format(request_path_pattern)
+        uri_pattern = request_path_pattern
+        uri_params_list = re.findall('\{[^\}]*\}', uri_pattern)
+        for i in range(len(uri_params_list)):
+            uri_params_list[i] = uri_params_list[i][1:-1]
+        uri_pattern = re.sub('\{[^\}]*\}', '([^/]*)', uri_pattern)
+        uri_pattern = '^{}$'.format(uri_pattern)
         file_path_pattern = '{}'.format(target_path)
         route = self.Route('GET', uri_pattern, file_path_pattern=file_path_pattern)
         self.route_list.append(route)
