@@ -56,12 +56,15 @@ class App:
     def set_static_file_routes(self, route_dict):
         self.router.add_static_file_dict(route_dict)
 
-    def set_spa_routes(self, route_file_dict):
-        for route_file, target_file in route_file_dict.items():
-            with open(route_file, 'r') as f:
-                spa_routes = json.load(f)
-            for spa_page in spa_routes:
-                self.router.add_static_file('/{}'.format(spa_page[0]), target_file)
+    # def set_spa_routes(self, route_file_dict):
+    #     for route_file, target_file in route_file_dict.items():
+    #         with open(route_file, 'r') as f:
+    #             spa_routes = json.load(f)
+    #         for spa_page in spa_routes:
+    #             self.router.add_static_file('/{}'.format(spa_page[0]), target_file)
+    def set_spa_routes(self, uri_list, file_path):
+        for uri in uri_list:
+            self.router.add_static_file(uri, file_path)
 
     def __call__(self, env, start_response):
         request = Request(env)
