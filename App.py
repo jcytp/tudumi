@@ -14,8 +14,10 @@ class App:
         self.router = Router()
         self.default_response = Response(code=500)
         self.settings = {
+            'Debug-Mode': False,
             'Content-Length': True,
             'Database-Auto-Connect': True,
+            'Use-Session': False,
         }
         self.databases = {}
         self.mail = None

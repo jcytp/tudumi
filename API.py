@@ -303,8 +303,8 @@ class API:
         if not result:
             self.error_code = API.Code.ERR_DATA_FAILED
             self.error_message.add('register', 'データベース操作にエラーが発生しました')
-            return None
-        return self.db.last_row_id()
+            return False
+        return True
 
     def update(self, table, values, conditions):
         sql = 'UPDATE `{}` SET {} {}'.format(table, self._build_substitutions(values), self._build_conditions(conditions))
