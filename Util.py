@@ -11,6 +11,7 @@ from Crypto.Random import get_random_bytes
 
 class Util:
     SECRET_KEY = None
+    datetime = datetime
 
     @staticmethod
     def generate_secret(secret, iterations_count=100):
@@ -118,11 +119,17 @@ class Util:
 
     @staticmethod
     def strftime(time_val):
+        if type(time_val) != datetime:
+            return None
         return time_val.strftime('%Y/%m/%d %H:%M:%S')
 
     @staticmethod
     def strptime(time_str):
-        return datetime.strptime(time_str, '%Y/%m/%d %H:%M:%S')
+        try:
+            str_time = datetime.strptime(time_str, '%Y/%m/%d %H:%M:%S')
+        except ValueError:
+            return None
+        return str_time
 
     @staticmethod
     def timedelta(**kwargs):

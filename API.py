@@ -149,6 +149,27 @@ class API:
                     )
                     self.error_message.add('check_param', msg)
                 value = default
+        elif type == Util.datetime:
+            try:
+                value = Util.strptime(value)
+                if (minvalue is not None) and (value < minvalue):
+                    raise ValueError()
+                if (maxvalue is not None) and (value > maxvalue):
+                    raise ValueError()
+                if valid_list is not None:
+                    if not value in valid_list:
+                        raise ValueError()
+            except ValueError:
+                if required and default is None:
+                    self.error_code = API.Code.ERR_INVALID_PARAM
+                    msg = '{} は{}{}{} の日時です'.format(
+                        display_name,
+                        '' if minvalue is None else ' {}以降'.format(minvalue),
+                        '' if maxvalue is None else ' {}以前'.format(maxvalue),
+                        '' if valid_list is None else 'または'.join(valid_list),
+                    )
+                    self.error_message.add('check_param', msg)
+                value = default
         else:
             print('### Error| API.check_param() | invalid parameter type {}.'.format(type))
             value = default
