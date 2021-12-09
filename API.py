@@ -128,8 +128,8 @@ class API:
                     self.error_message.add('check_param', msg)
                 value = default
         elif type == int or type == float:
-            value = int(value) if type == int else float(value)
             try:
+                value = int(value) if type == int else float(value)
                 if (minvalue is not None) and (value < minvalue):
                     raise ValueError()
                 if (maxvalue is not None) and (value > maxvalue):
@@ -146,6 +146,22 @@ class API:
                         '' if maxvalue is None else ' {}以下'.format(maxvalue),
                         '' if valid_list is None else 'または'.join(valid_list),
                         '整数' if type == int else '数値'
+                    )
+                    self.error_message.add('check_param', msg)
+                value = default
+        elif type == bool:
+            try:
+                if 'true' == value:
+                    value = True
+                elif 'false' == value:
+                    value = False
+                else:
+                    raise ValueError()
+            except ValueError:
+                if required and default is None:
+                    self.error_code = API.Code.ERR_INVALID_PARAM
+                    msg = '{} はtrueまたはfalse です'.format(
+                        display_name,
                     )
                     self.error_message.add('check_param', msg)
                 value = default
