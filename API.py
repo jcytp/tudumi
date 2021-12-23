@@ -264,6 +264,14 @@ class API:
             raise ValueError
         order_text = 'ORDER BY `{}` {}'.format(order[0], order[1])
         return order_text
+    def _build_orders(self, orders):
+        if len(orders) == 0:
+            return ''
+        order_list = []
+        for order_set in orders:
+            order_list.append('`{}` {}'.format(order_set[0], order_set[1]))
+        order_text = 'ORDER BY {}'.format(', '.join(order_list))
+        return order_text
 
     def get_one(self, table, conditions):
         data = self._select(table, conditions, None, 1, 0)
@@ -273,16 +281,16 @@ class API:
             return None
         return data[0]
 
-    def get_list(self, table, conditions, order=None, limit=100, offset=0):
-        data = self._select(table, conditions, order, limit, offset)
+    def get_list(self, table, conditions, orders=[], limit=100, offset=0):
+        data = self._select(table, conditions, orders, limit, offset)
         if data is None:
             self.error_code = API.Code.ERR_DATA_FAILED
             self.error_message.add('check_exist', 'データベース操作にエラーが発生しました')
             return None
         return data
 
-    def _select(self, table, conditions, order, limit, offset):
-        sql = 'SELECT * FROM `{}` {} {} LIMIT {} OFFSET {}'.format(table, self._build_conditions(conditions), self._build_order(order), limit, offset)
+    def _select(self, table, conditions, orders, limit, offset):
+        sql = 'SELECT * FROM `{}` {} {} LIMIT {} OFFSET {}'.format(table, self._build_conditions(conditions), self._build_orders(orders), limit, offset)
         params = self._build_params(conditions=conditions)
         return self.db.query(sql, params)
 
