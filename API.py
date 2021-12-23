@@ -274,7 +274,7 @@ class API:
         return order_text
 
     def get_one(self, table, conditions):
-        data = self._select(table, conditions, None, 1, 0)
+        data = self._select(table, conditions, [], 1, 0)
         if data is None or len(data) == 0:
             self.error_code = API.Code.ERR_DATA_FAILED
             self.error_message.add('check_exist', 'データベース操作にエラーが発生しました')
